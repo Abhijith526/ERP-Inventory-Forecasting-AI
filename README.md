@@ -1,215 +1,180 @@
-# Enterprise Demand Forecasting Microservice
+# ERP Demand Forecasting with AI Assistant
 
-> **Production-grade, multi-model demand forecasting system with SAP S/4HANA-style ERP integration.**
+> **An intelligent ERP demand forecasting system built using FastAPI, PostgreSQL, multiple Machine Learning models, and Ollama (Llama 3) for AI-powered business insights.**
 
-[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue)](https://python.org)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.110-green)](https://fastapi.tiangolo.com)
-[![Docker](https://img.shields.io/badge/docker-ready-blue)](https://docker.com)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-blue)](https://postgresql.org)
-
----
-
-## Business Problem
-
-Modern enterprises running SAP S/4HANA face a critical challenge: **demand volatility**. Supply chain disruptions, seasonal spikes, and promotion events make accurate 30-day demand forecasting essential for:
-
-- Optimizing inventory replenishment cycles
-- Reducing warehouse carrying costs
-- Preventing stockouts that cost lost revenue
-- Aligning production schedules with predicted demand
-
-This microservice **benchmarks industry-standard forecasting models** and automatically promotes the best one into a live REST API — replacing manual SAP IBP configuration with a self-tuning ML pipeline.
+![Python](https://img.shields.io/badge/Python-3.11-blue)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.110-green)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-blue)
+![XGBoost](https://img.shields.io/badge/XGBoost-ML-orange)
+![Ollama](https://img.shields.io/badge/Ollama-Llama3-purple)
 
 ---
 
-## Architecture
+# Project Overview
 
+Modern ERP systems require accurate demand forecasting to optimize inventory, reduce stockouts, and improve supply chain planning.
+
+This project predicts the next **30 days of product demand** using multiple forecasting models and automatically selects the best-performing model based on evaluation metrics. The system also integrates **Ollama (Llama 3)** to generate AI-powered business insights and inventory recommendations from forecast results.
+
+---
+
+# Features
+
+- Multi-model demand forecasting
+- Automatic best model selection
+- FastAPI REST API
+- PostgreSQL database integration
+- Feature engineering pipeline
+- Model evaluation using MAE, RMSE and MAPE
+- AI-generated forecast explanation using Ollama (Llama 3)
+- Interactive Swagger documentation
+- Enterprise-ready modular architecture
+
+---
+
+# Technology Stack
+
+### Backend
+- Python
+- FastAPI
+- SQLAlchemy
+- PostgreSQL
+- Pydantic
+
+### Machine Learning
+- XGBoost
+- SARIMA
+- LSTM
+- Temporal Fusion Transformer (TFT)
+
+### AI
+- Ollama
+- Llama 3
+
+---
+
+# System Architecture
+
+```text
+                 ERP Database
+                (PostgreSQL)
+                      │
+                      ▼
+            Feature Engineering
+                      │
+                      ▼
+       ┌───────────────────────────┐
+       │ Multiple ML Models        │
+       │                           │
+       │ • XGBoost                 │
+       │ • SARIMA                  │
+       │ • LSTM                    │
+       │ • TFT                     │
+       └─────────────┬─────────────┘
+                     │
+                     ▼
+         Automatic Best Model Selection
+                     │
+                     ▼
+           30-Day Demand Forecast
+                     │
+                     ▼
+          Ollama (Llama 3)
+                     │
+                     ▼
+      AI Business Recommendation
+                     │
+                     ▼
+             FastAPI JSON Response
 ```
-┌───────────────────────────────────────────────────────────────────┐
-│                     ERP Demand Forecasting Stack                  │
-│                                                                   │
-│  ┌──────────────┐     ┌──────────────┐     ┌──────────────────┐  │
-│  │  PostgreSQL  │────▶│  FastAPI     │────▶│  Model Registry  │  │
-│  │  (ERP Data)  │     │  Microservice│     │  /models/*.json  │  │
-│  └──────────────┘     └──────┬───────┘     └──────────────────┘  │
-│                              │                                    │
-│                  ┌───────────▼──────────┐                        │
-│                  │  Model Dispatcher    │                        │
-│                  │                      │                        │
-│          ┌───────┼──────┬──────┬───────┤                        │
-│          ▼       ▼      ▼      ▼       ▼                        │
-│       SARIMA  XGBoost LSTM   TFT   [Prophet*]                   │
-│                                                                   │
-│  ┌──────────────────────────────────────────────────────────┐    │
-│  │  SAP S/4HANA Tables (simulated)                          │    │
-│  │  product_master | warehouse_master |                     │    │
-│  │  sales_transactions | inventory_levels                   │    │
-│  └──────────────────────────────────────────────────────────┘    │
-└───────────────────────────────────────────────────────────────────┘
-```
 
 ---
 
-## Model Comparison
+# Project Structure
 
-| Model | Strengths | Weaknesses | Best For | Status |
-|-------|-----------|------------|----------|--------|
-| **SARIMA** | Interpretable, strong on stationary series | Slow, manual tuning | Stable products | Available |
-| **XGBoost** | Fast, handles lag features natively | No temporal structure | Feature-rich datasets | Available |
-| **LSTM** | Learns temporal dependencies | Needs lots of data | Complex multivariate patterns | Available |
-| **TFT** | Probabilistic, attention mechanism | Slowest, most complex | Production at scale | Available |
-| **Prophet** | Holiday effects, trend changepoints | Less accurate on noisy data | Seasonal spikes | Planned |
-
-The system **auto-selects the best model based on lowest MAPE** and registers it.
-
----
-
-## SAP S/4HANA Integration
-
-This service simulates SAP's key ERP entities:
-
-| SAP Module | SAP Table | Our Table |
-|-----------|-----------|-----------|
-| MM (Materials) | T001W / MARA | `product_master` |
-| SD (Sales) | VBAP / VBAK | `sales_transactions` |
-| WM (Warehouse) | LGORT / T001L | `warehouse_master` |
-| MM (Inventory) | MARD / MMBE | `inventory_levels` |
-
-**In production**, replace the PostgreSQL queries with SAP RFC/BAPI calls or OData service consumption via SAP's Python RFC connector (`pyrfc`).
-
----
-
-## Project Structure
-
-```
-erp-demand-forecasting/
-├── app/
-│   ├── __init__.py
-│   ├── main.py              ← FastAPI app (all endpoints)
-│   ├── config.py            ← Settings via pydantic-settings
-│   ├── database.py          ← SQLAlchemy ORM + session management
-│   ├── schemas.py           ← Pydantic request/response models
-│   ├── preprocessing.py     ← Feature engineering pipeline
-│   ├── evaluation.py        ← MAE / RMSE / MAPE + timing
-│   ├── model_registry.py    ← Save / load / best-model tracking
-│   └── forecasting/
-│       ├── __init__.py
-│       ├── sarima_model.py
-│       ├── prophet_model.py
-│       ├── xgboost_model.py
-│       ├── lstm_model.py
-│       └── tft_model.py
-├── training/
-│   └── train_all_models.py  ← Orchestration script
-├── scripts/
-│   └── seed_data.py         ← Synthetic ERP data generator
-├── models/                  ← Trained model artefacts (gitignored)
-├── Dockerfile
-├── docker-compose.yml
+```text
+ERP_Demand_Forecasting
+│
+├── app
+│   ├── forecasting
+│   │   ├── xgboost_model.py
+│   │   ├── sarima_model.py
+│   │   ├── lstm_model.py
+│   │   └── tft_model.py
+│   │
+│   ├── services
+│   │   └── ai_service.py
+│   │
+│   ├── main.py
+│   ├── schemas.py
+│   ├── preprocessing.py
+│   ├── evaluation.py
+│   ├── model_registry.py
+│   ├── database.py
+│   └── config.py
+│
+├── training
+│   └── train_all_models.py
+│
+├── models
 ├── requirements.txt
-├── .env.example
-└── README.md
+├── README.md
+└── .env
 ```
 
 ---
 
-## Setup Instructions
+# Machine Learning Models
 
-### Prerequisites
+| Model | Description |
+|--------|-------------|
+| XGBoost | Gradient boosting model for feature-based demand prediction |
+| SARIMA | Statistical time-series forecasting |
+| LSTM | Deep learning model for sequential demand prediction |
+| TFT | Transformer-based forecasting model |
 
-- Python 3.10+
-- PostgreSQL 15+ running locally (or use Docker)
-- 8 GB RAM recommended (TFT and LSTM are memory-intensive)
-
-### 1. Clone & Install
-
-```bash
-git clone https://github.com/yourorg/erp-demand-forecasting.git
-cd erp-demand-forecasting
-
-python -m venv .venv
-.\.venv\Scripts\activate          # Windows
-# source .venv/bin/activate       # Linux/Mac
-
-pip install -r requirements.txt
-```
-
-### 2. Configure Environment
-
-```bash
-copy .env.example .env
-# Edit .env with your PostgreSQL credentials
-```
-
-### 3. Seed the Database
-
-```bash
-python scripts/seed_data.py
-```
-
-### 4. Start the API
-
-```bash
-uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
-```
-
-### 5. Train the Models
-
-```bash
-# Via API:
-curl -X POST "http://localhost:8000/train?product_id=P001&warehouse_id=W001"
-
-# Or directly:
-python training/train_all_models.py
-```
+The system automatically selects the best-performing model based on evaluation metrics.
 
 ---
 
-## Docker Deployment
+# AI Business Assistant
 
-```bash
-# Build & start all services (PostgreSQL + FastAPI)
-docker compose up --build -d
+The forecasting results are analysed using **Ollama (Llama 3)**.
 
-# Seed the database
-docker exec erp_forecast_api python scripts/seed_data.py
+Instead of only returning numerical predictions, the AI generates:
 
-# Check logs
-docker compose logs -f api
+- Demand trend analysis
+- Increase/decrease summary
+- Inventory recommendation
+- Business-friendly explanation
+
+Example:
+
 ```
+Forecast:
+Day 1 : 64.63 units
+Day 2 : 65.79 units
+...
+```
+
+AI Response:
+
+> Demand is expected to gradually decrease over the next month. Maintain moderate inventory levels while increasing stock during short demand peaks to avoid shortages.
 
 ---
 
-## API Usage
+# API Endpoints
 
-### Health Check
-```bash
-curl http://localhost:8000/health
-```
-```json
-{
-  "status": "ok",
-  "version": "1.0.0",
-  "timestamp": "2024-02-23T14:00:00Z",
-  "database": "connected",
-  "best_model": "xgboost"
-}
-```
+| Endpoint | Description |
+|----------|-------------|
+| GET /health | Health Check |
+| POST /train | Train all forecasting models |
+| GET /forecast | Generate demand forecast |
+| GET /models | Display available models and evaluation metrics |
 
-### Train All Models
-```bash
-curl -X POST "http://localhost:8000/train?product_id=P001&warehouse_id=W001"
-```
+---
 
-### Get Forecast (auto-select best model)
-```bash
-curl "http://localhost:8000/forecast?product_id=P001&warehouse_id=W001"
-```
-
-### Get Forecast (specific model)
-```bash
-curl "http://localhost:8000/forecast?product_id=P001&warehouse_id=W001&model=xgboost"
-```
+# Sample Forecast Response
 
 ```json
 {
@@ -218,59 +183,62 @@ curl "http://localhost:8000/forecast?product_id=P001&warehouse_id=W001&model=xgb
   "model_used": "xgboost",
   "forecast_horizon_days": 30,
   "forecast": [
-    {"day": 1, "forecast_units": 48.3},
-    {"day": 2, "forecast_units": 51.7},
-    ...
-  ]
+    {
+      "day": 1,
+      "forecast_units": 64.63
+    }
+  ],
+  "ai_summary": "Demand is expected to gradually decrease over the next month. Maintain moderate inventory levels and avoid overstocking."
 }
 ```
 
-### List Models & Metrics
-```bash
-curl http://localhost:8000/models
-```
+---
 
-### Interactive Docs
-- Swagger UI: `http://localhost:8000/docs`
-- ReDoc: `http://localhost:8000/redoc`
+# Evaluation Metrics
+
+- MAE (Mean Absolute Error)
+- RMSE (Root Mean Squared Error)
+- MAPE (Mean Absolute Percentage Error)
+- Training Time
+- Inference Time
 
 ---
 
-## Feature Engineering
+# Future Improvements
 
-| Feature | Description |
-|---------|-------------|
-| `lag_1`, `lag_7`, `lag_14` | Units sold 1, 7, 14 days ago |
-| `rolling_mean_7/14` | 7 and 14-day rolling average |
-| `rolling_std_7` | 7-day demand volatility |
-| `day_of_week` | 0=Monday … 6=Sunday |
-| `month` | 1–12 seasonality |
-| `promotion_flag` | 1 if discount_percent > 0 |
-| `inventory_level` | Current stock on hand |
-| `category_encoded` | Product category (ordinal) |
-| `region_encoded` | Warehouse region (ordinal) |
+- Interactive Dashboard
+- Docker Deployment
+- SAP S/4HANA Integration
+- Real-Time Data Streaming
+- Weather-aware Demand Forecasting
+- Promotion-aware Forecasting
 
 ---
 
-## Benchmark Results
+# Skills Demonstrated
 
-Results on synthetic ERP data (P001 / W001, 730-day history, 30-day horizon):
-
-| Model | MAE | RMSE | MAPE% | Train (s) | Infer (s) |
-|-------|-----|------|-------|-----------|----------|
-| **SARIMA** | 7.09 | 9.67 | 9.43 | 0.63 | 0.004 |
-| **XGBoost** * | **6.95** | 10.39 | **9.47** | 5.33 | 0.089 |
-| **LSTM** | 8.58 | 12.25 | 12.17 | 11.01 | 0.527 |
-| **TFT** | 9.63 | 13.08 | 12.49 | 41.94 | 0.002 |
-
-\* Auto-selected as best model (lowest MAE). Prophet integration is planned for a future release.
+- Python
+- FastAPI
+- PostgreSQL
+- SQLAlchemy
+- Machine Learning
+- Time Series Forecasting
+- XGBoost
+- LSTM
+- SARIMA
+- Temporal Fusion Transformer (TFT)
+- REST API Development
+- Ollama
+- Llama 3
+- AI Integration
+- Backend Development
 
 ---
 
-## Evaluation Metrics
+# Author
 
-- **MAE** — Mean Absolute Error (unit: units/day)
-- **RMSE** — Root Mean Squared Error
-- **MAPE** — Mean Absolute Percentage Error (model selection criterion)
-- **Training time** — wall-clock seconds
-- **Inference time** — wall-clock seconds per forecast call
+**Abhijith Reddy**
+
+B.Tech Computer Science Engineering
+
+Amrita Vishwa Vidyapeetham
