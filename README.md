@@ -1,4 +1,4 @@
-# ERP Demand Forecasting with AI Assistant
+# ERP Inventory Forecasting with AI Assistant
 
 > **An intelligent ERP demand forecasting system built using FastAPI, PostgreSQL, multiple Machine Learning models, and Ollama (Llama 3) for AI-powered business insights.**
 
