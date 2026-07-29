@@ -174,6 +174,203 @@ AI Response:
 
 ---
 
+## ⚙️ Setup Instructions
+
+Follow these steps to set up and run the project on your local machine.
+
+### Prerequisites
+
+Ensure you have the following installed:
+
+- Python 3.11+
+- PostgreSQL 15+
+- Git
+- Ollama
+- Visual Studio Code (Recommended)
+
+---
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/YOUR_USERNAME/ERP-Demand-Forecasting-AI.git
+cd ERP-Demand-Forecasting-AI
+```
+
+---
+
+### 2. Create a Virtual Environment
+
+**Windows**
+
+```bash
+python -m venv venv311
+venv311\Scripts\activate
+```
+
+**Linux / macOS**
+
+```bash
+python3 -m venv venv311
+source venv311/bin/activate
+```
+
+---
+
+### 3. Install Required Packages
+
+```bash
+pip install -r requirements.txt
+```
+
+---
+
+### 4. Configure the Database
+
+Create a PostgreSQL database and update your `.env` file.
+
+Example:
+
+```env
+DATABASE_URL=postgresql://postgres:your_password@localhost:5432/erp_forecasting
+```
+
+---
+
+### 5. Seed the Database
+
+Generate sample ERP data.
+
+```bash
+python scripts/seed_data.py
+```
+
+---
+
+### 6. Install Ollama
+
+Download Ollama from:
+
+https://ollama.com/download
+
+Pull the Llama 3 model:
+
+```bash
+ollama pull llama3
+```
+
+Start the Ollama server:
+
+```bash
+ollama serve
+```
+
+Keep this terminal running while using the application.
+
+---
+
+### 7. Train the Forecasting Models
+
+```bash
+python training/train_all_models.py
+```
+
+The following models will be trained:
+
+- XGBoost
+- SARIMA
+- LSTM
+- Temporal Fusion Transformer (TFT)
+
+The best-performing model is automatically selected and registered.
+
+---
+
+### 8. Run the FastAPI Application
+
+```bash
+uvicorn app.main:app --reload
+```
+
+The server will start at:
+
+```
+http://127.0.0.1:8000
+```
+
+---
+
+### 9. Open API Documentation
+
+Swagger UI
+
+```
+http://127.0.0.1:8000/docs
+```
+
+ReDoc
+
+```
+http://127.0.0.1:8000/redoc
+```
+
+---
+
+### 10. Test the API
+
+#### Health Check
+
+```
+GET /health
+```
+
+#### Train Models
+
+```
+POST /train
+```
+
+#### Generate Forecast
+
+```
+GET /forecast
+```
+
+#### View Registered Models
+
+```
+GET /models
+```
+
+---
+
+## 🚀 Project Workflow
+
+```text
+PostgreSQL ERP Database
+          │
+          ▼
+Feature Engineering
+          │
+          ▼
+Train ML Models
+(XGBoost | SARIMA | LSTM | TFT)
+          │
+          ▼
+Best Model Selection
+          │
+          ▼
+30-Day Demand Forecast
+          │
+          ▼
+Ollama (Llama 3)
+          │
+          ▼
+AI Business Insights
+          │
+          ▼
+FastAPI JSON Response
+```
 # Sample Forecast Response
 
 ```json
